@@ -6,93 +6,97 @@
     <div class="col-md-6">
         <h2 class="fw-bold text-dark">📋 Task Dashboard</h2>
     </div>
-    <div class="col-md-6 text-md-end">
-        <a href="{% url 'tasks:task_create' %}" class="btn btn-purple">Create New Task</a>
+    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'tasks:task_create' %}" class="btn btn-purple w-100 w-md-auto">Create New Task</a>
     </div>
 </div>
 
-<!-- Search & Filter Bar -->
+<!-- Search & Filter Bar (Instantaneous) -->
 <div class="card mb-4 p-3">
-    <form method="GET" class="row g-3">
-        <div class="col-md-6">
-            <input type="text" name="search" class="form-control" placeholder="Search tasks by title..." value="{{ search_query }}">
+    <form method="GET" class="row g-3" id="searchFilterForm" onsubmit="return false;">
+        <div class="col-md-8">
+            <input type="text" id="searchInput" name="search" class="form-control" placeholder="Search tasks by title..." value="{{ search_query }}">
         </div>
         <div class="col-md-4">
-            <select name="status" class="form-select">
+            <select id="statusSelect" name="status" class="form-select">
                 <option value="">All Statuses</option>
                 <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
                 <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
                 <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
             </select>
         </div>
-        <div class="col-md-2 d-grid">
-            <button type="submit" class="btn btn-dark">Filter</button>
-        </div>
     </form>
 </div>
 
-<!-- Tasks Table -->
-<div class="card p-3">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-dark" style="background-color: #2b1055;">
-                <tr>
-                    <th>Title</th>
-                    <th>Assigned To</th>
-                    <th>Status</th>
-                    <th>Due Date</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for task in page_obj %}
-                <tr>
-                    <td class="fw-semibold">{{ task.title }}</td>
-                    <td>{{ task.assigned_to.username }}</td>
-                    <td>
-                        <span class="badge {% if task.status == 'Completed' %}bg-success{% elif task.status == 'In Progress' %}bg-primary{% else %}bg-warning text-dark{% endif %}">
-                            {{ task.status }}
-                        </span>
-                    </td>
-                    <td>{{ task.due_date }}</td>
-                    <td class="text-end">
-                        {% if task.status != 'Completed' %}
-                            <button class="btn btn-sm btn-outline-success js-complete-btn me-1" data-id="{{ task.pk }}">Done</button>
-                        {% endif %}
-                        <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
-                        <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center py-4 text-muted">No tasks found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<!-- Dynamic Container for AJAX Updates -->
+<div id="tasks-container">
+    <!-- Tasks Table -->
+    <div class="card p-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark" style="background-color: #2b1055;">
+                    <tr>
+                        <th>Title</th>
+                        <!-- Hidden on mobile -->
+                        <th class="d-none d-md-table-cell">Assigned To</th>
+                        <th>Status</th>
+                        <!-- Hidden on mobile -->
+                        <th class="d-none d-md-table-cell">Due Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in page_obj %}
+                    <tr>
+                        <td class="fw-semibold">{{ task.title }}</td>
+                        <td class="d-none d-md-table-cell">{{ task.assigned_to.username }}</td>
+                        <td>
+                            <span class="badge {% if task.status == 'Completed' %}bg-success{% elif task.status == 'In Progress' %}bg-primary{% else %}bg-warning text-dark{% endif %}">
+                                {{ task.status }}
+                            </span>
+                        </td>
+                        <td class="d-none d-md-table-cell">{{ task.due_date }}</td>
+                        <td class="text-end text-nowrap">
+                            {% if task.status != 'Completed' %}
+                                <button class="btn btn-sm btn-outline-success js-complete-btn me-1" data-id="{{ task.pk }}">Done</button>
+                            {% endif %}
+                            <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+                            <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No tasks found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Pagination Controls -->
-    {% if page_obj.has_other_pages %}
-    <nav class="mt-4">
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}">Previous</a></li>
-            {% endif %}
-            <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
-            {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}">Next</a></li>
-            {% endif %}
-        </ul>
-    </nav>
-    {% endif %}
+        <!-- Pagination Controls -->
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // CSRF Helper
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -109,30 +113,80 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     const csrftoken = getCookie('csrftoken');
 
-    document.querySelectorAll('.js-complete-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const taskId = this.getAttribute('data-id');
-            const row = this.closest('tr');
-            const badge = row.querySelector('.badge');
+    // Logic to bind the 'Done' button clicks
+    function bindCompleteButtons() {
+        document.querySelectorAll('.js-complete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const taskId = this.getAttribute('data-id');
+                const row = this.closest('tr');
+                const badge = row.querySelector('.badge');
 
-            fetch(`/task/${taskId}/toggle-status/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/json'
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    badge.textContent = data.new_status;
-                    badge.className = 'badge bg-success';
-                    this.remove();
-                }
-            })
-            .catch(error => console.error('Error:', error));
+                fetch(`/task/${taskId}/toggle-status/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'Content-Type': 'application/json'
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        badge.textContent = data.new_status;
+                        badge.className = 'badge bg-success';
+                        this.remove(); 
+                        showToast('Task marked as completed!', 'success'); // Call global toast
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
         });
+    }
+
+    // Bind buttons on initial load
+    bindCompleteButtons();
+
+    // Logic for Instantaneous Search/Filter
+    const searchInput = document.getElementById('searchInput');
+    const statusSelect = document.getElementById('statusSelect');
+    let typingTimer;
+    
+    function fetchFilteredTasks() {
+        // Build the URL with the current parameters
+        const url = new URL(window.location.href);
+        url.searchParams.set('search', searchInput.value);
+        url.searchParams.set('status', statusSelect.value);
+        // Reset to page 1 on new searches
+        url.searchParams.delete('page');
+
+        // Fetch the raw HTML of the updated list
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                // Parse the returned HTML document
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Extract just the table container and swap it out
+                const newContent = doc.getElementById('tasks-container').innerHTML;
+                document.getElementById('tasks-container').innerHTML = newContent;
+                
+                // Update the browser URL without reloading
+                window.history.pushState({}, '', url);
+                
+                // Re-bind the click listeners for the newly injected HTML elements
+                bindCompleteButtons();
+            })
+            .catch(error => console.error('Error filtering:', error));
+    }
+
+    // Listeners for instant filtering
+    searchInput.addEventListener('input', function() {
+        clearTimeout(typingTimer);
+        // Delay fetch by 350ms so it doesn't query the database on every single keystroke
+        typingTimer = setTimeout(fetchFilteredTasks, 350);
     });
+
+    statusSelect.addEventListener('change', fetchFilteredTasks);
 });
 </script>
 {% endblock %}
