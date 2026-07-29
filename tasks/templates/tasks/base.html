@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Task Management System{% endblock %}</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Dark Purple Theme Styles -->
+    <style>
+        :root {
+            --bs-dark-purple: #2b1055;
+            --bs-deep-purple: #1a0833;
+            --bs-accent-purple: #7928ca;
+            --bs-neon-accent: #a855f7;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Custom Dark Purple Navbar */
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--bs-deep-purple), var(--bs-dark-purple));
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-custom .navbar-brand, 
+        .navbar-custom .nav-link {
+            color: #e2e8f0 !important;
+            font-weight: 500;
+        }
+
+        .navbar-custom .nav-link:hover {
+            color: var(--bs-neon-accent) !important;
+        }
+
+        /* Custom Cards & Buttons */
+        .card {
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            border-radius: 0.75rem;
+        }
+
+        .btn-purple {
+            background-color: var(--bs-accent-purple);
+            color: white;
+            border: none;
+        }
+
+        .btn-purple:hover {
+            background-color: var(--bs-dark-purple);
+            color: white;
+        }
+
+        footer {
+            background-color: var(--bs-deep-purple);
+            color: #a0aec0;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom px-4 mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand fs-4" href="#">🚀 TaskManager</a>
+            <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Tasks List</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a class="btn btn-purple btn-sm px-3" href="#">+ New Task</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Django Flash Messages Container -->
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main Content Block -->
+    <main class="container flex-grow-1 my-3">
+        {% block content %}
+        <!-- Child templates will inject their content here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-3 mt-auto">
+        <small>&copy; 2026 Task Management System | Powered by Django & Bootstrap</small>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,64 @@
+{% extends 'tasks/base.html' %}
+{% block title %}All Tasks - TaskManager{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h2 class="fw-bold text-dark">📋 Task Dashboard</h2>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="#" class="btn btn-purple">Create New Task</a>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="card mb-4 p-3">
+    <form method="GET" class="row g-3">
+        <div class="col-md-6">
+            <input type="text" name="search" class="form-control" placeholder="Search tasks by title..." value="{{ request.GET.search }}">
+        </div>
+        <div class="col-md-4">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-dark">Filter</button>
+        </div>
+    </form>
+</div>
+
+<!-- Tasks Table -->
+<div class="card p-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark" style="background-color: #2b1055;">
+                <tr>
+                    <th>Title</th>
+                    <th>Assigned To</th>
+                    <th>Status</th>
+                    <th>Due Date</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Placeholder row for previewing style -->
+                <tr>
+                    <td class="fw-semibold">Design System Architecture</td>
+                    <td>admin</td>
+                    <td><span class="badge bg-warning text-dark">Pending</span></td>
+                    <td>2026-08-15</td>
+                    <td class="text-end">
+                        <a href="#" class="btn btn-sm btn-outline-secondary">View</a>
+                        <a href="#" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
