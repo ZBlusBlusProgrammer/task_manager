@@ -7,7 +7,7 @@
         <h2 class="fw-bold text-dark">📋 Task Dashboard</h2>
     </div>
     <div class="col-md-6 text-md-end">
-        <a href="#" class="btn btn-purple">Create New Task</a>
+        <a href="{% url 'tasks:task_create' %}" class="btn btn-purple">Create New Task</a>
     </div>
 </div>
 
@@ -15,14 +15,14 @@
 <div class="card mb-4 p-3">
     <form method="GET" class="row g-3">
         <div class="col-md-6">
-            <input type="text" name="search" class="form-control" placeholder="Search tasks by title..." value="{{ request.GET.search }}">
+            <input type="text" name="search" class="form-control" placeholder="Search tasks by title..." value="{{ search_query }}">
         </div>
         <div class="col-md-4">
             <select name="status" class="form-select">
                 <option value="">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
+                <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
+                <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
             </select>
         </div>
         <div class="col-md-2 d-grid">
@@ -45,20 +45,44 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Placeholder row for previewing style -->
+                {% for task in page_obj %}
                 <tr>
-                    <td class="fw-semibold">Design System Architecture</td>
-                    <td>admin</td>
-                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                    <td>2026-08-15</td>
+                    <td class="fw-semibold">{{ task.title }}</td>
+                    <td>{{ task.assigned_to.username }}</td>
+                    <td>
+                        <span class="badge {% if task.status == 'Completed' %}bg-success{% elif task.status == 'In Progress' %}bg-primary{% else %}bg-warning text-dark{% endif %}">
+                            {{ task.status }}
+                        </span>
+                    </td>
+                    <td>{{ task.due_date }}</td>
                     <td class="text-end">
-                        <a href="#" class="btn btn-sm btn-outline-secondary">View</a>
-                        <a href="#" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
+                        <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+                        <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
                     </td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No tasks found.</td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination Controls -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}">Previous</a></li>
+            {% endif %}
+            <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ status_filter }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}
