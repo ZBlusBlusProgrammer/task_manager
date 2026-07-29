@@ -5,6 +5,9 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import Task
 from .forms import TaskForm
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
 
 def task_list(request):
     # Optimize database queries by pre-fetching foreign key user data
@@ -71,3 +74,13 @@ def task_delete(request, pk):
         messages.warning(request, "Task deleted successfully!")
         return redirect('tasks:task_list')
     return render(request, 'tasks/task_confirm_delete.html', {'object': task})
+@login_required
+@require_POST
+def task_toggle_status(request, pk):
+    task = get_object_or_404(Task, pk=pk)
+    # Cycle or set to Completed
+    if task.status != 'Completed':
+        task.status = 'Completed'
+        task.save()
+        return JsonResponse({'status': 'success', 'new_status': task.status})
+    return JsonResponse({'status': 'no_change', 'new_status': task.status})

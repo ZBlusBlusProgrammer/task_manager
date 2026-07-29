@@ -56,6 +56,9 @@
                     </td>
                     <td>{{ task.due_date }}</td>
                     <td class="text-end">
+                        {% if task.status != 'Completed' %}
+                            <button class="btn btn-sm btn-outline-success js-complete-btn me-1" data-id="{{ task.pk }}">Done</button>
+                        {% endif %}
                         <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
                         <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
                         <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
@@ -85,4 +88,51 @@
     </nav>
     {% endif %}
 </div>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Helper function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Attach click listeners to all AJAX completion buttons
+    document.querySelectorAll('.js-complete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const taskId = this.getAttribute('data-id');
+            const row = this.closest('tr');
+            const badge = row.querySelector('.badge');
+
+            fetch(`/task/${taskId}/toggle-status/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    badge.textContent = data.new_status;
+                    badge.className = 'badge bg-success';
+                    this.remove(); // Remove the button once completed
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+});
+</script>
 {% endblock %}
