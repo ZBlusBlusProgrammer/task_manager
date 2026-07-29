@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'tasks',
 ]
 
 MIDDLEWARE = [
@@ -74,8 +75,12 @@ WSGI_APPLICATION = 'task_manager.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'task_manager_db',
+        'USER': 'postgres',        # Replace with your PostgreSQL username if different
+        'PASSWORD': 'GhpgAdmin', # Replace with your PostgreSQL password
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
