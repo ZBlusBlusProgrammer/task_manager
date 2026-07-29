@@ -6,9 +6,48 @@
     <div class="col-md-8">
         <div class="card p-4 shadow-sm">
             <h3 class="mb-3 fw-bold" style="color: #2b1055;">Manage Task</h3>
+            
             <form method="POST">
                 {% csrf_token %}
-                {{ form.as_p }}
+                
+                <!-- General error notice if validation fails -->
+                {% if form.errors %}
+                    <div class="alert alert-danger py-2">
+                        Please correct the errors below.
+                    </div>
+                {% endif %}
+
+                <!-- Render form fields nicely using Django's form loop or as_p -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Title</label>
+                    {{ form.title }}
+                    <div class="text-danger small">{{ form.title.errors }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Assigned To</label>
+                    {{ form.assigned_to }}
+                    <div class="text-danger small">{{ form.assigned_to.errors }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Description</label>
+                    {{ form.description }}
+                    <div class="text-danger small">{{ form.description.errors }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Status</label>
+                    {{ form.status }}
+                    <div class="text-danger small">{{ form.status.errors }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Due Date</label>
+                    {{ form.due_date }}
+                    <div class="text-danger small">{{ form.due_date.errors }}</div>
+                </div>
+
                 <div class="d-flex justify-content-between mt-4">
                     <a href="{% url 'tasks:task_list' %}" class="btn btn-outline-secondary">Cancel</a>
                     <button type="submit" class="btn btn-purple">Save Task</button>
@@ -17,31 +56,4 @@
         </div>
     </div>
 </div>
-<!-- Inside tasks/templates/tasks/task_form.html -->
-<form method="POST">
-    {% csrf_token %}
-    
-    <!-- Show a general error message if the form was rejected by the backend -->
-    {% if form.errors %}
-        <div class="alert alert-danger">
-            Please correct the errors below.
-        </div>
-    {% endif %}
-
-    <div class="mb-3">
-        <label>Title</label>
-        {{ form.title }}
-        <!-- This line prints the backend error (e.g., "This field is required.") -->
-        <div class="text-danger">{{ form.title.errors }}</div> 
-    </div>
-
-    <div class="mb-3">
-        <label>Due Date</label>
-        {{ form.due_date }}
-        <!-- This line prints the backend error (e.g., "Enter a valid date.") -->
-        <div class="text-danger">{{ form.due_date.errors }}</div>
-    </div>
-    
-    <button type="submit" class="btn btn-purple">Save Task</button>
-</form>
 {% endblock %}
