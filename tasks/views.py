@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.contrib.auth.models import User
 from .models import Task
 from .forms import TaskForm
 from django.http import JsonResponse
@@ -39,13 +39,21 @@ def task_detail(request, pk):
     task = get_object_or_404(Task, pk=pk)
     return render(request, 'tasks/task_detail.html', {'object': task})
 
-@login_required
 def task_create(request):
     if request.method == 'POST':
         form = TaskForm(request.POST)
         if form.is_valid():
             task = form.save(commit=False)
-            task.created_by = request.user  # Securely stamp the logged-in user
+            # If a user is logged in, use them; otherwise, default to the first superuser/user in the database
+            if request.user.is_authenticated:
+                task.created_by = request.user
+            else:
+                default_user = User.objects.first()
+                if default_user:
+                    task.created_by = default_user
+                else:
+                    # Fallback if no user exists at all
+                    return redirect('admin:index')
             task.save()
             messages.success(request, "Task created successfully!")
             return redirect('tasks:task_list')
@@ -53,7 +61,6 @@ def task_create(request):
         form = TaskForm()
     return render(request, 'tasks/task_form.html', {'form': form})
 
-@login_required
 def task_update(request, pk):
     task = get_object_or_404(Task, pk=pk)
     if request.method == 'POST':
@@ -66,7 +73,6 @@ def task_update(request, pk):
         form = TaskForm(instance=task)
     return render(request, 'tasks/task_form.html', {'form': form})
 
-@login_required
 def task_delete(request, pk):
     task = get_object_or_404(Task, pk=pk)
     if request.method == 'POST':
@@ -74,11 +80,10 @@ def task_delete(request, pk):
         messages.warning(request, "Task deleted successfully!")
         return redirect('tasks:task_list')
     return render(request, 'tasks/task_confirm_delete.html', {'object': task})
-@login_required
+
 @require_POST
 def task_toggle_status(request, pk):
     task = get_object_or_404(Task, pk=pk)
-    # Cycle or set to Completed
     if task.status != 'Completed':
         task.status = 'Completed'
         task.save()
